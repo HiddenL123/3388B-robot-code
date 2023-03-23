@@ -7,7 +7,6 @@
 #include "pros/imu.hpp"
 #include "pros/motors.h"
 
-
 /////
 // For instalattion, upgrading, documentations and tutorials, check out website!
 // https://ez-robotics.github.io/EZ-Template/
@@ -306,6 +305,24 @@ void cataShoot(){
   cata.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   cata=0;
 }
+void load(){
+  if(!catalim.get_value()){
+    cata.move(200);
+    pros::delay(ez::util::DELAY_TIME);
+  }else{
+    cata.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    cata=0;
+  }
+}
+void shoot(){
+  if(catalim.get_value()){
+    cata.move(200);
+    pros::delay(ez::util::DELAY_TIME);
+  }else{
+    cata.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    cata=0;
+  }
+}
 void left1(){
   cataLoad();
   cataShoot();
@@ -385,6 +402,11 @@ void right1(){
 
   intake.move_relative(-480,200);//spin the roller
   pros::delay(1000);
+}
+void right2(){
+  chassis.set_drive_pid(36, DRIVE_SPEED);//drives to roller
+  chassis.wait_drive(load);
+  
 }
 void autonRight(){
   right1();

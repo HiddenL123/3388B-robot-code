@@ -2,8 +2,9 @@
 #include "global.hpp"
 #include "pros/motors.h"
 #include <chrono>
+#include "control.cpp"
 int glob=0;
-bool on=false;
+bool expansionExtend=true;
 /////
 // For instalattion, upgrading, documentations and tutorials, check out website!
 // https://ez-robotics.github.io/EZ-Template/
@@ -14,6 +15,7 @@ pros::Motor cata(8, pros::E_MOTOR_GEARSET_18, cataSwitch, pros::E_MOTOR_ENCODER_
 pros::Motor intake(7, pros::E_MOTOR_GEARSET_18, !cataSwitch, pros::E_MOTOR_ENCODER_DEGREES);
 pros::ADIDigitalOut launcher('a', HIGH);
 pros::ADIDigitalIn catalim('b');
+pros::ADIDigitalOut piston_boost('c', LOW);
 
 
 // Chassis constructor
@@ -71,7 +73,7 @@ void initialize() {
   // Print our branding over your terminal :D
 
   cata.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-  launcher.set_value(on);
+  launcher.set_value(!expansionExtend);
   ez::print_ez_template();
   
   pros::delay(500); // Stop the user from doing anything while legacy ports configure.
@@ -182,6 +184,7 @@ void opcontrol() {
   long endTime=90;
   long cataOverride=false;
   while (true) {
+    chassis.get_odometry();
     current=time_t();
     elapsed=current-start;
     // chassis.tank(); // Tank control
@@ -192,41 +195,9 @@ void opcontrol() {
 
     // . . .
     // Put more user control code here!
-    if (master.get_digital(DIGITAL_R1)){
-      intake=200;
-    }else if (master.get_digital(DIGITAL_R2)) {
-      intake=-200;
-    }else{
-      intake=0;
-    }
-    if (master.get_digital(DIGITAL_UP)){
-      cata=-200;
-      cataOverride=true;
-    }else if(!master.get_digital(DIGITAL_L1)&&!catalim.get_value()&&!cataOverride){
-      cata=200;
-    }else if (master.get_digital(DIGITAL_L1)&&!catalim.get_value()){
-      cata=200;
-    }else if(master.get_digital(DIGITAL_L2)&&catalim.get_value()){
-      cata=200;
-    }else if(master.get_digital(DIGITAL_DOWN)){
-      cata=200;
-      cataOverride=false;
-    }else{
-      cata.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-      cata.move_velocity(0);
-    }
-
-    if(master.get_digital(DIGITAL_A)){
-      launcher.set_value(!on);
-    }else if(master.get_digital(DIGITAL_B)){
-      launcher.set_value(on);
-    }/*else if(!master.get_digital(DIGITAL_A)&&elapsed>endTime+5){
-      launcher.set_value(!on);
-    }*/
-    
-    //printf("Time:"+elapsed);
     
     
+    control();
     
     // . . .
 
